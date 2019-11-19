@@ -5,17 +5,21 @@ author: "Shuai Shao, Shuyuan Shi, Xinyue Li"
 date: "11/14/2019"
 output: html_document
 ---
-##Data management
-In this group project, we will use github to record and track every team member's work. You can find our project at [https://github.com/shaoshuai95/PSYC201A-project.git].
 
-We have get the permission to access to the data from VA hospital. Currently, we have... varables
+In this group project, we will use github to record and track every team member's work. You can find our project at [github repository](https://github.com/shaoshuai95/PSYC201A-project.git).
 
-We will gather more variables such as veteran's social support, traumatical experience... (such as childhood trauma), 
+For this project, we are aiming to explore the veteran’s psychological health patterns in categories of depression, anxiety, sleep patterns, social connections, drug abuse, and social support. 
 
-We plan to analyze:
-1) hypothesis + how to test it (method: linear regression.../chi-squred test...)
-2)
-...
+In order to obtain data of veterans, we have got permission to access the dataset that records veterans’ treatment records from the VA hospital. Currently, we have demographic information (age, gender, ethnicity, social relationship status), alcohol usage, anxiety disorder scale, depression scale, emotional support, sleep patterns, BMI, and military service deployment (type, branch, number).
+
+After conducting some preliminary analyses, we plan to gather more variables such as veteran's social support, traumatic experience (such as childhood trauma and trauma during military service), substance abuse other than alcohol so that we can have a more overall analysis of the psychological health for veterans in the VA hospital. We can get necessary dataset by November 20th. 
+
+We plan to analyze:  
+1) The relationship between veterans’ emotional support status and their anxiety/depression level (linear regression, correlation).  
+2) The relationship between traumatic experiences, their substance abuse, and their anxiety levels (linear regression, multiple regression, correlation).  
+3) The possible difference in types and branches of military service deployment and the veteran’s traumatic experiences (ANOVA, chi-squared test).  
+4) The possible differences of all mentioned variables in gender, age, and ethnicity (linear regression, chi-squared test, t-test).  
+5) We will also explore other possible relationships of the data.  
 
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
@@ -37,7 +41,7 @@ data <- rename(data,"gender"="demo_gender",
                     "Caucasian"="demo_racewhite",
                     "African"="demo_race_black",
                     "Native"="demo_race_amind",
-                    "Pacific Island"="demo_race_pacisl",
+                    "Pacific_Island"="demo_race_pacisl",
                     "Asian"="demo_race_asian",
                     "Other"="demo_race_oth",
                     "Unclassified"="demo_race_decline",
@@ -48,9 +52,47 @@ data <- rename(data,"gender"="demo_gender",
                     "ServiceDeployCount"="serv_deploy_count") 
 ```
 
+```{r mutate the variable format}
+data <- data %>%
+  mutate (Hispanic=as.character(Hispanic),
+         Caucasian=as.character(Caucasian),
+         African=as.character(African),
+         Native=as.character(Native),
+         Pacific_Island=as.character(Pacific_Island),
+         Asian=as.character(Asian),
+         Other=as.character(Other),
+         Unclassified=as.character(Unclassified))
+```
+
 ```{r dealing with missing data}
 # replace all "999"s with "NA"
 data[data==999]=NA
+data <- data %>%
+  filter(!is.na(gender)) %>%
+  filter(!is.na(Caucasian)) %>%
+  filter(!is.na(Hispanic)) %>%
+  filter(!is.na(African)) %>%
+  filter(!is.na(Native)) %>%
+  filter(!is.na(Pacific_Island)) %>%
+  filter(!is.na(Asian)) %>%
+  filter(!is.na(Other)) %>%
+  filter(!is.na(Unclassified)) %>%
+  filter(!is.na(Relationship))
+```
+
+```{r}
+data <- unite(data, Ethnics, Hispanic, Caucasian, African, Native, Pacific_Island, Asian, Other, Unclassified, sep="", remove=FALSE)
+
+data$Ethnics[data$Ethnics=="10000000"]="Hispanic"
+data$Ethnics[data$Ethnics=="01000000"]="Caucasian"
+data$Ethnics[data$Ethnics=="00100000"]="African"
+data$Ethnics[data$Ethnics=="00010000"]="Native"
+data$Ethnics[data$Ethnics=="00001000"]="Pacific Island"
+data$Ethnics[data$Ethnics=="00000100"]="Asian"
+data$Ethnics[data$Ethnics=="00000010"]="Other"
+data$Ethnics[data$Ethnics=="00000001"]="Unclassified"
+
+data$Ethnics[!(data$Ethnics %in% c("Hispanic","Caucasian","African","Native","Pacific Island","Asian","Other","Unclassified"))]="Mixed"
 ```
 
 ```{r filter out unreasonable cases}
@@ -61,8 +103,8 @@ data <- data %>%
 ```
 
 ```{r recode gender }
-# male=1, female=0
-data$gender[data$gender==2]=0
+data$gender[data$gender==2]="female"
+data$gender[data$gender==1]="male"
 ```
 
 ```{r rename values}
@@ -93,136 +135,103 @@ data$ServiceBranch[data$ServiceBranch == "5"] = "National"
 data$ServiceBranch[data$ServiceBranch == "6"] = "Navy"
 ```
 
+## Demographical Variables
+
 ```{r demographical variables}
-#gender and ethnics distribution
+#Hispanic
 data %>%
-  ggplot(aes(x=Hispanic,fill = gender))+
-  geom_histogram()+
-   labs(title = "Distribution of Ethnicity by Gender",
+  ggplot() +
+  geom_bar(aes(x=Ethnics,fill=gender),stat="count",position = "dodge")+
+  theme_bw() +
+  labs(title = "Distribution of Ethnicity by Gender",
        x = "Ethnicity",
        y = "Count")
-  
-#age(gender) ~ sleep
-data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=Age,y = sleep_score, color = gender))+
-  geom_point()+
-  geom_smooth()+
-   labs(title = "Relationship Between Age And Sleep",
-       x = "Age",
-       y = "Sleep Quality")
+```
 
-#relationship(gender) ~ sleep (anova?)
+```{r sleeping quality~relationship+gender}
 data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=Relationship,y = sleep_score, color = gender))+
-   labs(title = "Relationship Between Relationship Status And Sleep",
+  ggplot()+
+  geom_boxplot(aes(x=Relationship,y = sleep_score, color = gender)) +
+  labs(title = "Relationship Between Relationship Status And Sleep",
        x = "Relationship Status",
-       y = "Sleep Quality")
+       y = "Sleep Quality") +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=30, hjust=1))
 
-#relationship(gender) ~ anxiety (anova?)
+model_rel_sleep=lm(data=data,formula=sleep_score~Relationship+gender)
+anova(model_rel_sleep)
+```
+
+```{r anxiety~relationship+gender}
 data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=Relationship,y = gad7_score, color = gender))+
-   labs(title = "Relationship Between Relationship Status And Anxiety",
+  ggplot() + 
+  geom_boxplot(aes(x=Relationship,y = gad7_score, color = gender)) +
+  labs(title = "Relationship Between Relationship Status And Anxiety",
        x = "Relationship Status",
-       y = "Anxiety Level")
+       y = "Anxiety Level") +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=30, hjust=1))
 
-#relationship(gender) ~ depression (anova?)
-data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=Relationship,y = dep_score_phq9, color = gender))+
-   labs(title = "Relationship Between Relationship Status And Depression",
+model_rel_anx=lm(data=data,formula=gad7_score~Relationship+gender)
+anova(model_rel_anx)
+```
+
+```{r depression~relationship+gender}
+data %>%  
+  ggplot() + 
+  geom_boxplot(aes(x=Relationship,y = dep_score_phq9, color = gender)) +
+  labs(title = "Relationship Between Relationship Status And Depression",
        x = "Relationship Status",
-       y = "Depression")
+       y = "Depression") +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=30, hjust=1))
 
-#relationship(gender) ~ alc consuming (substance abuse?) (anova?)
-data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=Relationship,y = alc_score_audit, color = gender))+
-   labs(title = "Relationship Between Relationship Status And Alcohol Abuse",
+model_rel_dep=lm(data=data,formula=gad7_score~Relationship+gender)
+anova(model_rel_dep)
+```
+
+```{r alcohol abuse~relationship+gender}
+data %>%  
+  ggplot() + 
+  geom_boxplot(aes(x=Relationship,y = alc_score_audit, color = gender)) +
+  labs(title = "Relationship Between Relationship Status And Alcohol Abuse",
        x = "Relationship Status",
-       y = "Alcohol Abuse")
+       y = "Alcohol Abuse") +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=30, hjust=1))
 
-# emotional support ~ sleep 
+model_rel_alc=lm(data=data,formula=gad7_score~Relationship+gender)
+anova(model_rel_alc)
+```
+
+```{r sleep quality~emotional support}
 data %>%
-  gender = as.factor(gender)%>%
   ggplot(aes(x=es_score_promis,y = sleep_score, color = gender))+
-  geom_point()+
+  geom_jitter(alpha=0.4, size=0.5)+
   geom_smooth()+
+  theme_bw()+
    labs(title = "Relationship Between Emotional Support And Sleep",
        x = "Emotional Support",
        y = "Sleep")
 
-# emotional support ~ Anxiety 
+cor.test(data$es_score_promis,data$sleep_score)
+
+model_es_gender_sleep=lm(data=data,formula=sleep_score~es_score_promis+gender)
+anova(model_es_gender_sleep)
+```
+
+```{r anxiety~emotional support}
 data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=es_score_promis,y = gad7_score, color = gender))+
-  geom_point()+
+  ggplot(aes(x=es_score_promis,y=gad7_score,color=gender))+
+  geom_jitter(alpha=0.4, size=0.5)+
   geom_smooth()+
-   labs(title = "Relationship Between Emotional Support And Anxiety",
+  theme_bw()+
+  labs(title = "Relationship Between Emotional Support And Anxiety",
        x = "Emotional Support",
        y = "Anxiety")
 
-# emotional support ~ Depression 
-data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=es_score_promis,y = dep_score_phq9, color = gender))+
-  geom_point()+
-  geom_smooth()+
-   labs(title = "Relationship Between Emotional Support And Depression",
-       x = "Emotional Support",
-       y = "Depression")
+cor.test(data$es_score_promis,data$gad7_score)
 
-#emotional support(gender) ~ alc consuming (substance abuse?) (anova?)
-data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=es_score_promis,y = alc_score_audit, color = gender))+
-  geom_point()+
-  geom_smooth()+
-   labs(title = "Relationship Between Emotional Support And Alcohol Abuse",
-       x = "Emotional Support",
-       y = "Alcohol Abuse")
-
-# sleep ~ alcohol
-data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=sleep_score,y = alc_score_audit, color = gender))+
-  geom_point()+
-  geom_smooth()+
-   labs(title = "Relationship Between Sleep And Alcohol Abuse",
-       x = "Sleep Quality",
-       y = "Alcohol Abuse")
-# sleep ~ anxiety
-data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=sleep_score,y = gad7_score, color = gender))+
-  geom_point()+
-  geom_smooth()+
-   labs(title = "Relationship Between Sleep And Anxiety",
-       x = "Sleep Quality",
-       y = "Anxiety Level")
-
-# sleep ~ BMI
-data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=sleep_score,y = demo_BMI, color = gender))+
-  geom_point()+
-  geom_smooth()+
-   labs(title = "Relationship Between Sleep And BMI",
-       x = "Sleep Quality",
-       y = "BMI")
-
-#sleep ~ Depression
-data %>%
-  gender = as.factor(gender)%>%
-  ggplot(aes(x=sleep_score,y = dep_score_phq9, color = gender))+
-  geom_point()+
-  geom_smooth()+
-   labs(title = "Relationship Between Sleep And Depression",
-       x = "Sleep Quality",
-       y = "Depression")
+model_es_gender_anx=lm(data=data,formula=gad7_score~es_score_promis+gender)
+anova(model_es_gender_anx)
 ```
-
-```
-
