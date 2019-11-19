@@ -95,12 +95,134 @@ data$ServiceBranch[data$ServiceBranch == "6"] = "Navy"
 
 ```{r demographical variables}
 #gender and ethnics distribution
+data %>%
+  ggplot(aes(x=Hispanic,fill = gender))+
+  geom_histogram()+
+   labs(title = "Distribution of Ethnicity by Gender",
+       x = "Ethnicity",
+       y = "Count")
+  
+#age(gender) ~ sleep
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=Age,y = sleep_score, color = gender))+
+  geom_point()+
+  geom_smooth()+
+   labs(title = "Relationship Between Age And Sleep",
+       x = "Age",
+       y = "Sleep Quality")
 
-#ethnic distribution
+#relationship(gender) ~ sleep (anova?)
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=Relationship,y = sleep_score, color = gender))+
+   labs(title = "Relationship Between Relationship Status And Sleep",
+       x = "Relationship Status",
+       y = "Sleep Quality")
 
-#age ditribution
+#relationship(gender) ~ anxiety (anova?)
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=Relationship,y = gad7_score, color = gender))+
+   labs(title = "Relationship Between Relationship Status And Anxiety",
+       x = "Relationship Status",
+       y = "Anxiety Level")
 
-#gender and ethnic
+#relationship(gender) ~ depression (anova?)
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=Relationship,y = dep_score_phq9, color = gender))+
+   labs(title = "Relationship Between Relationship Status And Depression",
+       x = "Relationship Status",
+       y = "Depression")
+
+#relationship(gender) ~ alc consuming (substance abuse?) (anova?)
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=Relationship,y = alc_score_audit, color = gender))+
+   labs(title = "Relationship Between Relationship Status And Alcohol Abuse",
+       x = "Relationship Status",
+       y = "Alcohol Abuse")
+
+# emotional support ~ sleep 
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=es_score_promis,y = sleep_score, color = gender))+
+  geom_point()+
+  geom_smooth()+
+   labs(title = "Relationship Between Emotional Support And Sleep",
+       x = "Emotional Support",
+       y = "Sleep")
+
+# emotional support ~ Anxiety 
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=es_score_promis,y = gad7_score, color = gender))+
+  geom_point()+
+  geom_smooth()+
+   labs(title = "Relationship Between Emotional Support And Anxiety",
+       x = "Emotional Support",
+       y = "Anxiety")
+
+# emotional support ~ Depression 
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=es_score_promis,y = dep_score_phq9, color = gender))+
+  geom_point()+
+  geom_smooth()+
+   labs(title = "Relationship Between Emotional Support And Depression",
+       x = "Emotional Support",
+       y = "Depression")
+
+#emotional support(gender) ~ alc consuming (substance abuse?) (anova?)
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=es_score_promis,y = alc_score_audit, color = gender))+
+  geom_point()+
+  geom_smooth()+
+   labs(title = "Relationship Between Emotional Support And Alcohol Abuse",
+       x = "Emotional Support",
+       y = "Alcohol Abuse")
+
+# sleep ~ alcohol
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=sleep_score,y = alc_score_audit, color = gender))+
+  geom_point()+
+  geom_smooth()+
+   labs(title = "Relationship Between Sleep And Alcohol Abuse",
+       x = "Sleep Quality",
+       y = "Alcohol Abuse")
+# sleep ~ anxiety
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=sleep_score,y = gad7_score, color = gender))+
+  geom_point()+
+  geom_smooth()+
+   labs(title = "Relationship Between Sleep And Anxiety",
+       x = "Sleep Quality",
+       y = "Anxiety Level")
+
+# sleep ~ BMI
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=sleep_score,y = demo_BMI, color = gender))+
+  geom_point()+
+  geom_smooth()+
+   labs(title = "Relationship Between Sleep And BMI",
+       x = "Sleep Quality",
+       y = "BMI")
+
+#sleep ~ Depression
+data %>%
+  gender = as.factor(gender)%>%
+  ggplot(aes(x=sleep_score,y = dep_score_phq9, color = gender))+
+  geom_point()+
+  geom_smooth()+
+   labs(title = "Relationship Between Sleep And Depression",
+       x = "Sleep Quality",
+       y = "Depression")
+```
 
 ```
 
