@@ -6,7 +6,7 @@ date: "11/14/2019"
 output: html_document
 ---
 
-In this group project, we will use github to record and track every team member's work. You can find our project at [github repository](https://github.com/shaoshuai95/PSYC201A-project.git).
+In this group project, we will use github to record and track every team member's work. You can find our project at this [github repository](https://github.com/shaoshuai95/PSYC201A-project.git).
 
 For this project, we are aiming to explore the veteran’s psychological health patterns in categories of depression, anxiety, sleep patterns, social connections, drug abuse, and social support. 
 
@@ -148,6 +148,8 @@ data %>%
        y = "Count")
 ```
 
+
+## Preliminary analyses
 ```{r sleeping quality~relationship+gender}
 data %>%
   ggplot()+
@@ -235,3 +237,9 @@ cor.test(data$es_score_promis,data$gad7_score)
 model_es_gender_anx=lm(data=data,formula=gad7_score~es_score_promis+gender)
 anova(model_es_gender_anx)
 ```
+
+## Future Directions
+In the following stage, we will  
+1) add more variables of interest   
+2) explore more complex relationships such as interactions among explanatory variables  
+3) explain the results in APA style.
