@@ -1,10 +1,21 @@
 ---
-title: "Veteran's Psychological and Physical Health"
+title: "Veteran's Life History and Psychological Health"
 subtitle: "A dataset from San Diego VA hospital"
 author: "Shuai Shao, Shuyuan Shi, Xinyue Li"
 date: "11/14/2019"
 output: html_document
 ---
+##Data management
+In this group project, we will use github to record and track every team member's work. You can find our project at [https://github.com/shaoshuai95/PSYC201A-project.git].
+
+We have get the permission to access to the data from VA hospital. Currently, we have... varables
+
+We will gather more variables such as veteran's social support, traumatical experience... (such as childhood trauma), 
+
+We plan to analyze:
+1) hypothesis + how to test it (method: linear regression.../chi-squred test...)
+2)
+...
 
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
@@ -16,15 +27,80 @@ data <- readxl::read_xlsx("PSYC201a.xlsx")
 ```
 
 ```{r clean the data}
-#dealing with missing values
+# select varables of interest
+data <- data %>% 
+  select(-2,-13)
 
-#recode gender
+# rename the columns
+data <- rename(data,"gender"="demo_gender",
+                    "Hispanic"="demo_ethnic",
+                    "Caucasian"="demo_racewhite",
+                    "African"="demo_race_black",
+                    "Native"="demo_race_amind",
+                    "Pacific Island"="demo_race_pacisl",
+                    "Asian"="demo_race_asian",
+                    "Other"="demo_race_oth",
+                    "Unclassified"="demo_race_decline",
+                    "Age"="Calculate999age",
+                    "Relationship"="demo_relationship",
+                    "ServiceType"="serv_type_0",
+                    "ServiceBranch"="serv_branch_0",
+                    "ServiceDeployCount"="serv_deploy_count") 
+```
 
-#recode ethnic
+```{r dealing with missing data}
+# replace all "999"s with "NA"
+data[data==999]=NA
+```
 
+```{r filter out unreasonable cases}
+# filter out unreasonable cases
+data <- data %>% 
+  filter(Age<100) %>%
+  filter(Age>18)
+```
+
+```{r recode gender }
+# male=1, female=0
+data$gender[data$gender==2]=0
+```
+
+```{r rename values}
+#rename relationships
+data$Relationship=as.character(data$Relationship)
+data$Relationship[data$Relationship=="1"]="single"
+data$Relationship[data$Relationship=="2"]="married"
+data$Relationship[data$Relationship=="3"]="seperated"
+data$Relationship[data$Relationship=="4"]="divorced"
+data$Relationship[data$Relationship=="5"]="cohabitating"
+data$Relationship[data$Relationship=="6"]="civil union"
+data$Relationship[data$Relationship=="7"]="remarried"
+data$Relationship[data$Relationship=="8"]="widowed"
+
+#recode service type
+data$ServiceType = as.character(data$ServiceType)
+data$ServiceType[data$ServiceType == "1"] = "Active Duty"
+data$ServiceType[data$ServiceType == "2"] = "Reserve"
+data$ServiceType[data$ServiceType == "3"] = "Guard"
+
+#recode service branch
+data$ServiceBranch = as.character(data$ServiceBranch)
+data$ServiceBranch[data$ServiceBranch == "1"] = "Army"
+data$ServiceBranch[data$ServiceBranch == "2"] = "Air Force"
+data$ServiceBranch[data$ServiceBranch == "3"] = "Coast Guard"
+data$ServiceBranch[data$ServiceBranch == "4"] = "Marines"
+data$ServiceBranch[data$ServiceBranch == "5"] = "National"
+data$ServiceBranch[data$ServiceBranch == "6"] = "Navy"
 ```
 
 ```{r demographical variables}
+#gender and ethnics distribution
+
+#ethnic distribution
+
+#age ditribution
+
+#gender and ethnic
 
 ```
 
