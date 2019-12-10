@@ -6,7 +6,7 @@ date: "11/14/2019"
 output: html_document
 ---
 
-In this group project, we will use github to record and track every team member's work. You can find our project at [github repository](https://github.com/shaoshuai95/PSYC201A-project.git).
+In this group project, we will use github to record and track every team member's work. You can find our project at this [github repository](https://github.com/shaoshuai95/PSYC201A-project.git).
 
 For this project, we are aiming to explore the veteran’s psychological health patterns in categories of depression, anxiety, sleep patterns, social connections, drug abuse, and social support. 
 
@@ -33,7 +33,7 @@ data <- readxl::read_xlsx("PSYC201a.xlsx")
 ```{r clean the data}
 # select varables of interest
 data <- data %>% 
-  select(-2,-13)
+  select(-2,-12,-13)
 
 # rename the columns
 data <- rename(data,"gender"="demo_gender",
@@ -43,102 +43,157 @@ data <- rename(data,"gender"="demo_gender",
                     "Native"="demo_race_amind",
                     "Pacific_Island"="demo_race_pacisl",
                     "Asian"="demo_race_asian",
-                    "Other"="demo_race_oth",
                     "Unclassified"="demo_race_decline",
-                    "Age"="Calculate999age",
-                    "Relationship"="demo_relationship",
+                    "age"="Calculate999age",
+                    "relationship"="demo_relationship",
                     "ServiceType"="serv_type_0",
                     "ServiceBranch"="serv_branch_0",
-                    "ServiceDeployCount"="serv_deploy_count") 
+                    "ServiceDeployCount"="serv_deploy_count",
+                    "anxiety"="gad7_score",
+                    "sleep quality"="sleep_score",
+                    "depression"="dep_score_phq9",
+                    "bmi"="demo_BMI",
+                    "emotion support"="es_score_promis",
+                    "income"="demo_income_group",
+                    "education"="demo_education",
+                    "work status"="demo_workstatus",
+                    "employed hours"="demo_hours",
+                    "alone"="demo_livewith_alone",
+                    "parent"="demo_livewith_parent",
+                    "friend"="demo_livewith_friend",
+                    "child"="demo_livewith_child",
+                    "other"="demo_livewith_other",
+                    "none support"="demo_emo_none",
+                    "spouse support"="demo_emo_spouse",
+                    "therapist support"="demo_emo_therapist",
+                    "spiritual support"="demo_emo_spiritual",
+                    "children support"="demo_emo_children",
+                    "other support"="demo_emo_other",
+                    "relationship hurt"="demo_rel_hurt",
+                    "alcohol"="alc_score_audit") 
 ```
 
 ```{r mutate the variable format}
 data <- data %>%
   mutate (Hispanic=as.character(Hispanic),
-         Caucasian=as.character(Caucasian),
-         African=as.character(African),
-         Native=as.character(Native),
-         Pacific_Island=as.character(Pacific_Island),
-         Asian=as.character(Asian),
-         Other=as.character(Other),
-         Unclassified=as.character(Unclassified))
+          Caucasian=as.character(Caucasian),
+          African=as.character(African),
+          Native=as.character(Native),
+          Pacific_Island=as.character(Pacific_Island),
+          Asian=as.character(Asian),
+          Unclassified=as.character(Unclassified))
 ```
 
 ```{r dealing with missing data}
 # replace all "999"s with "NA"
 data[data==999]=NA
+
 data <- data %>%
-  filter(!is.na(gender)) %>%
-  filter(!is.na(Caucasian)) %>%
-  filter(!is.na(Hispanic)) %>%
-  filter(!is.na(African)) %>%
-  filter(!is.na(Native)) %>%
-  filter(!is.na(Pacific_Island)) %>%
-  filter(!is.na(Asian)) %>%
-  filter(!is.na(Other)) %>%
-  filter(!is.na(Unclassified)) %>%
-  filter(!is.na(Relationship))
+  filter(!is.na(gender)) %>%
+  filter(!is.na(Caucasian)) %>%
+  filter(!is.na(Hispanic)) %>%
+  filter(!is.na(African)) %>%
+  filter(!is.na(Native)) %>%
+  filter(!is.na(Pacific_Island)) %>%
+  filter(!is.na(Asian)) %>%
+  filter(!is.na(Unclassified)) 
+
 ```
 
-```{r}
-data <- unite(data, Ethnics, Hispanic, Caucasian, African, Native, Pacific_Island, Asian, Other, Unclassified, sep="", remove=FALSE)
+```{r recode ethnics}
+data <- unite(data, Ethnics, Hispanic, Caucasian, African, Native, Pacific_Island, Asian, Unclassified, sep="", remove=FALSE)
 
-data$Ethnics[data$Ethnics=="10000000"]="Hispanic"
-data$Ethnics[data$Ethnics=="01000000"]="Caucasian"
-data$Ethnics[data$Ethnics=="00100000"]="African"
-data$Ethnics[data$Ethnics=="00010000"]="Native"
-data$Ethnics[data$Ethnics=="00001000"]="Pacific Island"
-data$Ethnics[data$Ethnics=="00000100"]="Asian"
-data$Ethnics[data$Ethnics=="00000010"]="Other"
-data$Ethnics[data$Ethnics=="00000001"]="Unclassified"
+data$Ethnics[data$Ethnics=="1000000"]="Hispanic"
+data$Ethnics[data$Ethnics=="0100000"]="Caucasian"
+data$Ethnics[data$Ethnics=="0010000"]="African"
+data$Ethnics[data$Ethnics=="0001000"]="Native"
+data$Ethnics[data$Ethnics=="0000100"]="Pacific Island"
+data$Ethnics[data$Ethnics=="0000010"]="Asian"
+data$Ethnics[data$Ethnics=="0000001"]="Unclassified"
 
-data$Ethnics[!(data$Ethnics %in% c("Hispanic","Caucasian","African","Native","Pacific Island","Asian","Other","Unclassified"))]="Mixed"
+data$Ethnics[!(data$Ethnics %in% c("Hispanic","Caucasian","African","Native","Pacific Island","Asian","Unclassified"))]="Other"
+```
+
+```{r recode living status}
+data <- unite(data, support, alone, parent, friend, child, other, sep="", remove=FALSE)
+data$support[data$support=="10000"]="alone"
+data$support[data$support=="01000"]="parent"
+data$support[data$support=="00100"]="friend"
+data$support[data$support=="00010"]="child"
+
+data$support[!(data$support %in% c("alone","parent","friend","child"))]="other"
 ```
 
 ```{r filter out unreasonable cases}
 # filter out unreasonable cases
 data <- data %>% 
-  filter(Age<100) %>%
-  filter(Age>18)
-```
-
-```{r recode gender }
-data$gender[data$gender==2]="female"
-data$gender[data$gender==1]="male"
+  filter(age<100) %>%
+  filter(age>18)
 ```
 
 ```{r rename values}
-#rename relationships
-data$Relationship=as.character(data$Relationship)
-data$Relationship[data$Relationship=="1"]="single"
-data$Relationship[data$Relationship=="2"]="married"
-data$Relationship[data$Relationship=="3"]="seperated"
-data$Relationship[data$Relationship=="4"]="divorced"
-data$Relationship[data$Relationship=="5"]="cohabitating"
-data$Relationship[data$Relationship=="6"]="civil union"
-data$Relationship[data$Relationship=="7"]="remarried"
-data$Relationship[data$Relationship=="8"]="widowed"
+#recode gender
+data$gender[data$gender==2]="female"
+data$gender[data$gender==1]="male"
+
+#recode relationships
+data$relationship[data$relationship==1]="single"
+data$relationship[data$relationship==2]="married"
+data$relationship[data$relationship==3]="seperated"
+data$relationship[data$relationship==4]="divorced"
+data$relationship[data$relationship==5]="cohabitating"
+data$relationship[data$relationship==6]="civil union"
+data$relationship[data$relationship==7]="remarried"
+data$relationship[data$relationship==8]="widowed"
 
 #recode service type
-data$ServiceType = as.character(data$ServiceType)
+data$ServiceType = as.factor(data$ServiceType)
 data$ServiceType[data$ServiceType == "1"] = "Active Duty"
 data$ServiceType[data$ServiceType == "2"] = "Reserve"
 data$ServiceType[data$ServiceType == "3"] = "Guard"
 
 #recode service branch
-data$ServiceBranch = as.character(data$ServiceBranch)
+data$ServiceBranch = as.factor(data$ServiceBranch)
 data$ServiceBranch[data$ServiceBranch == "1"] = "Army"
 data$ServiceBranch[data$ServiceBranch == "2"] = "Air Force"
 data$ServiceBranch[data$ServiceBranch == "3"] = "Coast Guard"
 data$ServiceBranch[data$ServiceBranch == "4"] = "Marines"
 data$ServiceBranch[data$ServiceBranch == "5"] = "National"
 data$ServiceBranch[data$ServiceBranch == "6"] = "Navy"
+
+#recode income
+data$income = as.character(data$income)
+data$income[data$income == "1"] = "less than 15k"
+data$income[data$income == "2"] = "15k~30k"
+data$income[data$income == "3"] = "30k~45k"
+data$income[data$income == "4"] = "45k~60k"
+data$income[data$income == "5"] = "60k~75k"
+data$income[data$income == "6"] = "75k~100k"
+data$income[data$income == "7"] = "more than 100k"
+
+#recode education
+data$education = as.character(data$education)
+data$education[data$education == "1"] = "some high school"
+data$education[data$education == "2"] = "GED"
+data$education[data$education == "3"] = "high school"
+data$education[data$education == "4"] = "some college"
+data$education[data$education == "5"] = "associates degree"
+data$education[data$education == "6"] = "college degree"
+data$education[data$education == "7"] = "master's degree"
+data$education[data$education == "8"] = "doctoral degree"
+
+#recode work status
+data$`work status` = as.character(data$`work status`)
+data$`work status`[data$`work status` == "1"] = "full time"
+data$`work status`[data$`work status` == "2"] = "part time"
+data$`work status`[data$`work status` == "3"] = "seasonally"
+data$`work status`[data$`work status` == "4"] = "day labor"
+data$`work status`[data$`work status` == "5"] = "unemployed"
 ```
 
 ## Demographical Variables
 
 ```{r demographical variables}
-#Hispanic
 data %>%
   ggplot() +
   geom_bar(aes(x=Ethnics,fill=gender),stat="count",position = "dodge")+
@@ -148,31 +203,33 @@ data %>%
        y = "Count")
 ```
 
+
+## Preliminary analyses
 ```{r sleeping quality~relationship+gender}
 data %>%
   ggplot()+
-  geom_boxplot(aes(x=Relationship,y = sleep_score, color = gender)) +
+  geom_boxplot(aes(x=relationship,y = `sleep quality`,color = gender)) +
   labs(title = "Relationship Between Relationship Status And Sleep",
        x = "Relationship Status",
        y = "Sleep Quality") +
   theme_bw() +
   theme(axis.text.x=element_text(angle=30, hjust=1))
 
-model_rel_sleep=lm(data=data,formula=sleep_score~Relationship+gender)
+model_rel_sleep=lm(`sleep quality`~relationship,data)
 anova(model_rel_sleep)
 ```
 
 ```{r anxiety~relationship+gender}
 data %>%
   ggplot() + 
-  geom_boxplot(aes(x=Relationship,y = gad7_score, color = gender)) +
+  geom_boxplot(aes(x=relationship,y = anxiety, color = gender)) +
   labs(title = "Relationship Between Relationship Status And Anxiety",
        x = "Relationship Status",
        y = "Anxiety Level") +
   theme_bw() +
   theme(axis.text.x=element_text(angle=30, hjust=1))
 
-model_rel_anx=lm(data=data,formula=gad7_score~Relationship+gender)
+model_rel_anx=lm(data=data,formula=anxiety~relationship+gender)
 anova(model_rel_anx)
 ```
 
@@ -193,14 +250,14 @@ anova(model_rel_dep)
 ```{r alcohol abuse~relationship+gender}
 data %>%  
   ggplot() + 
-  geom_boxplot(aes(x=Relationship,y = alc_score_audit, color = gender)) +
+  geom_boxplot(aes(x=relationship,y = alcohol, color = gender)) +
   labs(title = "Relationship Between Relationship Status And Alcohol Abuse",
        x = "Relationship Status",
        y = "Alcohol Abuse") +
   theme_bw() +
   theme(axis.text.x=element_text(angle=30, hjust=1))
 
-model_rel_alc=lm(data=data,formula=gad7_score~Relationship+gender)
+model_rel_alc=lm(data=data,formula=alcohol~relationship+gender)
 anova(model_rel_alc)
 ```
 
@@ -235,3 +292,9 @@ cor.test(data$es_score_promis,data$gad7_score)
 model_es_gender_anx=lm(data=data,formula=gad7_score~es_score_promis+gender)
 anova(model_es_gender_anx)
 ```
+
+## Future Directions
+In the following stage, we will  
+1) add more variables of interest   
+2) explore more complex relationships such as interactions among explanatory variables  
+3) explain the results in APA style.
