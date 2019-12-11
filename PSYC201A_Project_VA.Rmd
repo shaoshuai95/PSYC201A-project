@@ -236,14 +236,14 @@ anova(model_rel_anx)
 ```{r depression~relationship+gender}
 data %>%  
   ggplot() + 
-  geom_boxplot(aes(x=Relationship,y = dep_score_phq9, color = gender)) +
+  geom_boxplot(aes(x=relationship,y = depression, color = gender)) +
   labs(title = "Relationship Between Relationship Status And Depression",
        x = "Relationship Status",
        y = "Depression") +
   theme_bw() +
   theme(axis.text.x=element_text(angle=30, hjust=1))
 
-model_rel_dep=lm(data=data,formula=gad7_score~Relationship+gender)
+model_rel_dep=lm(data=data,formula=depression~relationship+gender)
 anova(model_rel_dep)
 ```
 
@@ -263,7 +263,7 @@ anova(model_rel_alc)
 
 ```{r sleep quality~emotional support}
 data %>%
-  ggplot(aes(x=es_score_promis,y = sleep_score, color = gender))+
+  ggplot(aes(x=`emotion support`,y = `sleep quality`, color = gender))+
   geom_jitter(alpha=0.4, size=0.5)+
   geom_smooth()+
   theme_bw()+
@@ -271,15 +271,15 @@ data %>%
        x = "Emotional Support",
        y = "Sleep")
 
-cor.test(data$es_score_promis,data$sleep_score)
+cor.test(data$`emotion support`,data$`sleep quality`)
 
-model_es_gender_sleep=lm(data=data,formula=sleep_score~es_score_promis+gender)
+model_es_gender_sleep=lm(data=data,formula=`sleep quality`~ `emotion support` +gender)
 anova(model_es_gender_sleep)
 ```
 
 ```{r anxiety~emotional support}
 data %>%
-  ggplot(aes(x=es_score_promis,y=gad7_score,color=gender))+
+  ggplot(aes(x=`emotion support`,y=anxiety,color=gender))+
   geom_jitter(alpha=0.4, size=0.5)+
   geom_smooth()+
   theme_bw()+
@@ -287,9 +287,9 @@ data %>%
        x = "Emotional Support",
        y = "Anxiety")
 
-cor.test(data$es_score_promis,data$gad7_score)
+cor.test(data$`emotion support`,data$anxiety)
 
-model_es_gender_anx=lm(data=data,formula=gad7_score~es_score_promis+gender)
+model_es_gender_anx=lm(data=data,formula=anxiety ~ `emotion support`+gender)
 anova(model_es_gender_anx)
 ```
 
@@ -298,3 +298,84 @@ In the following stage, we will
 1) add more variables of interest   
 2) explore more complex relationships such as interactions among explanatory variables  
 3) explain the results in APA style.
+
+
+## SES + mental health
+```{r anxiety ~ income}
+data %>%
+  filter(!is.na(income)) %>% 
+  ggplot() + 
+  geom_boxplot(aes(x= income,y = anxiety, color = gender)) +
+  labs(title = "Relationship Between Income Level And Anxiety",
+       x = "Income level",
+       y = "anxiety") +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=30, hjust=1))
+
+data %>% group_by(income) %>% summarise(n = n())
+
+model_inc_anx= data %>%
+  filter(!is.na(income)) %>% lm(.,formula=anxiety ~ income+gender)
+anova(model_inc_anx)
+```
+
+```{r anxiety ~ education}
+data %>%
+  filter(!is.na(education)) %>% 
+  ggplot() + 
+  geom_boxplot(aes(x= education,y = anxiety, color = gender)) +
+  labs(title = "Relationship Between Education Level And Anxiety",
+       x = "Education level",
+       y = "anxiety") +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=30, hjust=1))
+
+data %>% group_by(income) %>% summarise(n = n())
+
+model_edu_anx= data %>%
+  filter(!is.na(education)) %>% lm(.,formula=anxiety ~ education+gender) 
+anova(model_edu_anx)
+summary(model_edu_anx)
+```
+
+```{r alcohol ~ income}
+data %>%
+  filter(!is.na(alcohol)) %>% 
+  filter(!is.na(income)) %>%
+  ggplot() + 
+  geom_boxplot(aes(x= income,y = alcohol, color = gender)) +
+  labs(title = "Relationship Between Income Level And Alcohol Usage",
+       x = "Income level",
+       y = "alcohol") +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=30, hjust=1))
+
+data %>% group_by(income) %>% summarise(n = n())
+
+model_edu_alc= data %>%
+  filter(!is.na(income)) %>% lm(.,formula=alcohol ~ income + gender) 
+anova(model_edu_alc)
+summary(model_edu_alc)
+
+```
+
+```{r anxiety ~ work status}
+data %>%
+  filter(!is.na(`work status`)) %>% 
+  ggplot() + 
+  geom_boxplot(aes(x= `work status`,y = anxiety, color = gender)) +
+  labs(title = "Relationship Between Work Status And Anxiety",
+       x = "work status",
+       y = "anxiety") +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=30, hjust=1))
+
+data %>% group_by(`work status`) %>% summarise(n = n())
+
+model_work_anx= data %>%
+  filter(!is.na(`work status`)) %>% lm(.,formula=anxiety ~ `work status` + gender) 
+anova(model_work_anx)
+summary(model_work_anx)
+
+```
+
