@@ -443,11 +443,10 @@ cor.mtest(correlation)
 ```
 
 ### Emotional Support
-```{r sleep quality~relationship+*gender}
+```{r sleep quality~relationship*gender}
 #Establish the model for relationship status, gender, and sleep quality
 model_rel_sleep=lm(`sleep quality`~relationship*gender,data)
 anova(model_rel_sleep)
-
 #Plot a graphic for relationship status, gender, and sleep quality
 data %>%
   ##Choose major categories of relationship
@@ -462,15 +461,15 @@ data %>%
   theme_bw()
 
 #Create subsets for pairwise t-test
-d.married <- data.relationship %>%
+d.married <- data %>%
   filter(relationship=="married")
-d.single <- data.relationship %>%
+d.single <- data %>%
   filter(relationship=="single")
-d.divorced <- data.relationship %>%
+d.divorced <- data %>%
   filter(relationship=="divorced")
 
 #Post-hoc pairwise t-test for sleep quality
-pairwise.t.test(data.relationship$`sleep quality`,data.relationship$relationship,p.adj="none")
+pairwise.t.test(data$`sleep quality`,data$relationship,p.adj="none")
 t.test(d.divorced$`sleep quality`,d.single$`sleep quality`)
 t.test(d.divorced$`sleep quality`,d.married$`sleep quality`)
 t.test(d.married$`sleep quality`,d.single$`sleep quality`)
@@ -705,7 +704,7 @@ anova(model_inc_alc)
 #Establish the education frequency table
 data %>% group_by(education) %>% count(education)
 #Establish the model for anxiety and education
-model_edu_anx= data %>% ilter(!is.na(education)) %>% lm(.,formula=anxiety ~ education)
+model_edu_anx= data %>% filter(!is.na(education)) %>% lm(.,formula=anxiety ~ education)
 anova(model_edu_anx)
 
 #Establish the model for sleep quality and education
